@@ -22,27 +22,31 @@ def main(argv):
 
     """ Create dirs for saving models and logs
     """
-    model_path_suffix = os.path.join(FLAGS.network_def,
-                                     'input_{}_output_{}'.format(FLAGS.input_size, FLAGS.heatmap_size),
-                                     'joints_{}'.format(FLAGS.num_of_joints),
-                                     'stages_{}'.format(FLAGS.cpm_stages),
-                                     'init_{}_rate_{}_step_{}'.format(FLAGS.init_lr, FLAGS.lr_decay_rate,
-                                                                      FLAGS.lr_decay_step)
-                                     )
-    model_save_dir = os.path.join('models',
-                                  'weights',
-                                  model_path_suffix)
-    train_log_save_dir = os.path.join('models',
-                                      'logs',
-                                      model_path_suffix,
-                                      'train')
-    test_log_save_dir = os.path.join('models',
-                                     'logs',
-                                     model_path_suffix,
-                                     'test')
-    os.system('mkdir -p {}'.format(model_save_dir))
-    os.system('mkdir -p {}'.format(train_log_save_dir))
-    os.system('mkdir -p {}'.format(test_log_save_dir))
+    # model_path_suffix = os.path.join(FLAGS.network_def,
+    #                                  'input_{}_output_{}'.format(FLAGS.input_size, FLAGS.heatmap_size),
+    #                                  'joints_{}'.format(FLAGS.num_of_joints),
+    #                                  'stages_{}'.format(FLAGS.cpm_stages),
+    #                                  'init_{}_rate_{}_step_{}'.format(FLAGS.init_lr, FLAGS.lr_decay_rate,
+    #                                                                   FLAGS.lr_decay_step)
+    #                                  )
+    # model_save_dir = os.path.join('models',
+    #                               'weights',
+    #                               model_path_suffix)
+    # train_log_save_dir = os.path.join('models',
+    #                                   'logs',
+    #                                   model_path_suffix,
+    #                                   'train')
+    # test_log_save_dir = os.path.join('models',
+    #                                  'logs',
+    #                                  model_path_suffix,
+    #                                  'test')
+    # os.system('mkdir -p {}'.format(model_save_dir))
+    # os.system('mkdir -p {}'.format(train_log_save_dir))
+    # os.system('mkdir -p {}'.format(test_log_save_dir))
+
+    model_save_dir = "./models/weights/checkpoint/"
+    train_log_save_dir ="./models/logs/train/"  
+    test_log_save_dir ="./models/logs/test/"  
 
     """ Create data generator
     """
@@ -67,7 +71,7 @@ def main(argv):
                                 img_type=FLAGS.color_channel,
                                 is_training=True)
     model.build_loss(FLAGS.init_lr, FLAGS.lr_decay_rate, FLAGS.lr_decay_step, optimizer='RMSProp')
-    print('=====Model Build=====\n')
+    print('===== Model Build =====\n')
 
     merged_summary = tf.summary.merge_all()
 
@@ -88,11 +92,13 @@ def main(argv):
         sess.run(init_op)
 
         # Restore pretrained weights
+        print('===== Restore pretrained weights =====\n')
         if FLAGS.pretrained_model != '':
             if FLAGS.pretrained_model.endswith('.pkl'):
                 model.load_weights_from_file(FLAGS.pretrained_model, sess, finetune=True)
 
                 # Check weights
+                print('===== Check weights0 =====\n')
                 for variable in tf.trainable_variables():
                     with tf.variable_scope('', reuse=True):
                         var = tf.get_variable(variable.name.split(':0')[0])
@@ -102,6 +108,7 @@ def main(argv):
                 saver.restore(sess, os.path.join(model_save_dir, FLAGS.pretrained_model))
 
                 # check weights
+                print('===== Check weights1 =====\n')
                 for variable in tf.trainable_variables():
                     with tf.variable_scope('', reuse=True):
                         var = tf.get_variable(variable.name.split(':0')[0])
